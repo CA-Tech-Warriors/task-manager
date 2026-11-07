@@ -23,15 +23,17 @@ your own controller and validator.
 
 ## Branches
 
-1. Start from the latest main: `git checkout main && git pull`
+`staging` is where all our work comes together. `main` stays untouched until we merge the finished project at the end.
+
+1. Start from the latest staging: `git checkout staging && git pull`
 2. One branch per card, named after it: `git checkout -b b-3-login-with-email`
 3. Commit small and often, with messages that say what changed: `Allow login with email (B-3)`
-4. Before opening a PR, bring in main: `git pull origin main` and fix any conflicts on your branch
-5. Open a pull request into main. Fill in the template.
+4. Before opening a PR, bring in staging: `git pull origin staging` and fix any conflicts on your branch
+5. Open a pull request into staging. Fill in the template.
 6. One other person reviews and approves. Then merge. Delete the branch.
 7. Move the Trello card to Done.
 
-Never push straight to main. Merge main into your branch at least once a day.
+Never push straight to staging or main. Merge staging into your branch at least once a day.
 
 ## Before you push
 
