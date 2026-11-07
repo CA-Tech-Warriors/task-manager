@@ -1,0 +1,24 @@
+{
+  "name": "task-manager",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Task Manager: React + Express + PostgreSQL",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "build": "npm run build -w client",
+    "start": "npm start -w server",
+    "seed": "npm run seed -w server",
+    "test": "npm test -w server",
+    "format": "prettier --write \"client/src/**/*.{js,jsx,css}\" \"server/**/*.js\" \"!**/node_modules/**\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "prettier": "^3.3.3"
+  }
+}

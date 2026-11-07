@@ -1,0 +1,2 @@
+# Same line endings on Windows and Mac, so files don't show as fully changed.
+* text=auto eol=lf
