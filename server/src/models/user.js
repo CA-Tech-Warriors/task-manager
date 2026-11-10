@@ -1,4 +1,4 @@
-// Owner: A (card A-4)
+// Owner: A (card A-5)
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) =>
