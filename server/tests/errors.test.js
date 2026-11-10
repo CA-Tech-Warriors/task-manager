@@ -70,7 +70,7 @@ describe('Error format (D-1)', () => {
     config.isProduction = true;
     const res = run(ApiError.forbidden());
     assert.equal(res.statusCode, 403);
-    assert.equal(res.body.message, "SMACK... you don't have permission to do that.");
+    assert.equal(res.body.message, "You don't have permission to do that.");
     assert.equal(res.body.stack, undefined);
   });
 });
