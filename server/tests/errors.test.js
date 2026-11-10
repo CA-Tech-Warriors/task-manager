@@ -53,15 +53,15 @@ describe('Error format (D-1)', () => {
 
   it('shows the real message and stack for unknown errors in development', () => {
     config.isProduction = false;
-    const res = run(new Error('database exploded'));
+    const res = run(new Error('BOOM database exploded'));
     assert.equal(res.statusCode, 500);
-    assert.equal(res.body.message, 'database exploded');
+    assert.equal(res.body.message, 'BOOM database exploded');
     assert.ok(res.body.stack);
   });
 
   it('hides the message and stack for unknown errors in production', () => {
     config.isProduction = true;
-    const res = run(new Error('database exploded'));
+    const res = run(new Error('BOOM database exploded'));
     assert.equal(res.statusCode, 500);
     assert.deepEqual(res.body, { message: 'Something went wrong.' });
   });
@@ -70,7 +70,7 @@ describe('Error format (D-1)', () => {
     config.isProduction = true;
     const res = run(ApiError.forbidden());
     assert.equal(res.statusCode, 403);
-    assert.equal(res.body.message, "You don't have permission to do that.");
+    assert.equal(res.body.message, "SMACK... you don't have permission to do that.");
     assert.equal(res.body.stack, undefined);
   });
 });
