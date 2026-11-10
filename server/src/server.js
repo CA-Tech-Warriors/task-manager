@@ -6,7 +6,7 @@ const { sequelize, state } = require('./models');
 async function start() {
   try {
     await sequelize.authenticate();
-    // TODO A-2: switch to migrations if the team wants them; sync is fine for this project.
+    // TODO A-3: switch to migrations if the team wants them; sync is fine for this project.
     await sequelize.sync();
     state.connected = true;
     console.log('Database connected');

@@ -1,4 +1,4 @@
-// Owner: A (card A-3)
+// Owner: A (card A-4)
 const { DataTypes } = require('sequelize');
 const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX } = require('../constants');
 

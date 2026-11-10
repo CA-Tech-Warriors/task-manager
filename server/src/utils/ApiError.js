@@ -1,5 +1,5 @@
 // Throw one of these from any controller; errorHandler turns it into the
-// standard response: { message, errors? }. Owner: D (card D-2).
+// standard response: { message, errors? }. Owner: D (card D-1).
 class ApiError extends Error {
   constructor(status, message, errors) {
     super(message);

@@ -1,4 +1,4 @@
-// The one place errors become responses. Owner: D (card D-2).
+// The one place errors become responses. Owner: D (card D-1).
 // Every error response has the same shape: { message, errors? }
 const { ValidationError, UniqueConstraintError } = require('sequelize');
 const config = require('../config');
