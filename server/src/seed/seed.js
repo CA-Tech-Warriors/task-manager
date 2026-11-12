@@ -6,8 +6,17 @@ const { Role, User, Task } = require('../models');
 
 async function seed() {
   await sequelize.authenticate();
-  // Drop and recreate tables from Sequelize models.
-  await sequelize.sync({ force: true });
+  
+  //Creates tables if they do not already exist
+  await sequelize.sync();
+  
+  //Check if data already exists 
+  const existingAdmin = await User.findOne({ where: { username: 'admin' } });
+
+  if (existingAdmin) {
+    console.log("Data already seeded")
+    return
+  }
 
   const [adminRole, userRole] = await Promise.all([Role.create({ name: 'admin' }), Role.create({ name: 'user' })]);
 
