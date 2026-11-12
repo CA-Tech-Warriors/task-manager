@@ -7,7 +7,7 @@ const authLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  skip: () => config.isTest,
+  skip: () => !config.isProduction,
   message: { message: 'Too many attempts. Wait 15 minutes, then try again.' },
 });
 

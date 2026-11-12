@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seed/seed.js",
-    "test": "mocha"
+    "test": "mocha tests/auth.test.js",
+    "postman": "npx newman run postman/TaskManagementAPI.postman_collection.json --reporters cli,json --reporter-json-export test-results.json"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

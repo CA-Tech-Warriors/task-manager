@@ -1,4 +1,4 @@
-// Loads every model and sets up relationships. Owner: A (card A-5).
+// Loads every model and sets up relationships. Owner: A (card A-2).
 // Shared file: other people import from here but shouldn't need to edit it.
 const { sequelize, state } = require('../db');
 
