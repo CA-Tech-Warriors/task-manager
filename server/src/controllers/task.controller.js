@@ -9,12 +9,27 @@ const { taskId } = require('../validators/task.validators');
 // 200 [task, ...]  (tasks with no due date sort last)
 
 exports.list = async (req, res) => {
-  //Search title and description (case-insensitive)
-
   //find all tasks for only current user
   const filters = {
     userId: req.user.id,
   };
+
+  //Search title and description (case-insensitive)
+
+  if (req.query.search) {
+    filters[Op.or] = [
+      {
+        title: {
+          [Op.iLike]: `%${req.query.search}%`,
+        },
+      },
+      {
+        description: {
+          [Op.iLike]: `%${req.query.search}%`,
+        },
+      },
+    ];
+  }
 
   //filter by status and priority
   if (req.query.status) {
