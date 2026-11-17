@@ -13,7 +13,7 @@ describe('Database', function () {
     }
   });
 
-  after(() => sequelize.close());
+ 
 
   it('connects', async () => {
     const [rows] = await sequelize.query('SELECT 1 AS ok');
