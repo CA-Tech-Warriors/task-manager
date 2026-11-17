@@ -36,7 +36,10 @@ export function normalizeTask(raw) {
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
     userId: raw.userId ?? raw.user_id ?? raw.ownerId ?? null,
-    owner: raw.owner?.username ?? raw.user?.username ?? raw.User?.username ?? raw.username ?? null,
+    owner:
+      typeof raw.owner === 'string'
+        ? raw.owner
+        : (raw.owner?.username ?? raw.user?.username ?? raw.User?.username ?? raw.username ?? null),
   };
 }
 
