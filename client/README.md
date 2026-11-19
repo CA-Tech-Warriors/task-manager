@@ -29,6 +29,7 @@ Copy `.env.example` to `.env`.
 | `/` | Landing | Everyone |
 | `/login` | Log in (username or email, "Keep me logged in") | Logged out |
 | `/register` | Sign up with live password rules | Logged out |
+| all pages | Header theme toggle icon (light/dark) | Everyone |
 | `/dashboard` | Task list: search, status chips, priority filter, sort, mark done, delete | Logged in |
 | `/board` | Board view: To do, In progress, Done columns | Logged in |
 | `/tasks/new` | Create task with a live preview | Logged in |
@@ -42,7 +43,7 @@ Copy `.env.example` to `.env`.
 src/
   api/          client.js (fetch wrapper, token storage, errors) and index.js (one function per endpoint)
   components/   layouts, route guards, task form, badges, icons
-  context/      AuthContext (who is logged in) and ToastContext (success and error messages)
+  context/      AuthContext, ThemeContext (light/dark mode), and ToastContext
   pages/        one file per route
   utils/        dates, validation, hooks
   config.js     status and priority values

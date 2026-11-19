@@ -34,6 +34,33 @@
   --shadow-pop: 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
+:root[data-theme='dark'] {
+  --ink: #e2e8f0;
+  --ink-2: #cbd5e1;
+  --muted: #94a3b8;
+  --line: #334155;
+  --line-strong: #475569;
+  --ground: #0b1220;
+  --surface: #111827;
+  --teal: #2dd4bf;
+  --teal-dark: #14b8a6;
+  --teal-soft: #123d3a;
+  --teal-ink: #99f6e4;
+  --blue: #93c5fd;
+  --blue-soft: #1e3a8a;
+  --green: #86efac;
+  --green-soft: #14532d;
+  --orange: #fdba74;
+  --orange-soft: #7c2d12;
+  --amber: #fcd34d;
+  --amber-soft: #78350f;
+  --slate-soft: #1e293b;
+  --red: #f87171;
+  --red-soft: #7f1d1d;
+  --red-line: #b91c1c;
+  --shadow-pop: 0 24px 44px rgba(2, 6, 23, 0.5);
+}
+
 *,
 *::before,
 *::after {
@@ -370,6 +397,9 @@ textarea {
 .icon-button:hover {
   background: var(--slate-soft);
   color: var(--ink);
+}
+.theme-toggle {
+  border: 1px solid var(--line);
 }
 .icon-button--danger {
   color: var(--red);
