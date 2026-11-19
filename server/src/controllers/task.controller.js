@@ -140,25 +140,25 @@ exports.getById = async (req, res) => {
 // PUT /api/tasks/:taskId  body: any task fields (the Board sends only what changed)  200 task
 exports.update = async (req, res) => {
   const { title, description, status, priority, dueDate } = req.body;
-
   const task = await Task.findByPk(req.params.taskId);
 
-  if (!task) {
-    return res.status(404).json({ message: 'Task can not be found' });
-  } else if (task.userId !== req.user.id) {
-    return res.status(403).json({ message: 'You are not authorized to edit this task.' });
-  } else {
-    await task.update({
-      title,
-      description,
-      status,
-      priority,
-      dueDate,
-    });
+  // Same answer for a missing task and someone else's, so nobody can probe other users' task IDs.
+  if (!task || task.userId !== req.user.id) {
+    throw ApiError.notFound('Task not found.');
   }
+
+  await task.update({
+    title,
+    description,
+    status,
+    priority,
+    dueDate,
+  });
 
   res.status(200).json(task);
 };
+
+// DELETE /api/tasks/:taskId  204
 
 // DELETE /api/tasks/:taskId  204
 exports.remove = async (req, res) => {

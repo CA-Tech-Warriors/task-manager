@@ -77,6 +77,7 @@ Every error uses one shape. `errors` appears only when specific fields are wrong
 ## Rules
 
 - Passwords: at least 8 characters, with a letter and a number. Stored as bcrypt hashes (10+ rounds).
+- Usernames: 3 to 30 characters, using letters, numbers, `_`, `.` or `-`. Email must be a valid address.
 - Tokens expire after `JWT_EXPIRES_IN` (1 day), or `JWT_REMEMBER_EXPIRES_IN` (7 days) when `rememberMe` is true.
 - `title` 1 to 100 characters, `description` up to 500. HTML is stripped before saving.
 - Users only ever see and change their own tasks.
