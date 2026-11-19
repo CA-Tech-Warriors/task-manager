@@ -1,4 +1,4 @@
-// /api/admin handlers. Owner: D (card D-1). Only admins reach these (see admin.routes.js).
+// /api/admin handlers. Owner: D (card D-2). Only admins reach these (see admin.routes.js).
 const ApiError = require('../utils/ApiError');
 const { User, Role, Task } = require('../models');
 
@@ -23,7 +23,7 @@ exports.listUsers = async (req, res) => {
   return res.status(200).json(payload);
 };
 
-// DELETE /api/admin/users/:userId  204  |  400 when deleting yourself
+// DELETE /api/admin/users/:userId  204  |  400 when deleting yourself  |  404 when missing
 exports.deleteUser = async (req, res) => {
   const userId = Number(req.params.userId);
   if (!Number.isInteger(userId) || userId < 1) {
@@ -67,7 +67,7 @@ exports.listTasks = async (req, res) => {
   return res.status(200).json(payload);
 };
 
-// DELETE /api/admin/tasks/:taskId  204
+// DELETE /api/admin/tasks/:taskId  204  |  404 when missing
 exports.deleteTask = async (req, res) => {
   const taskId = Number(req.params.taskId);
   if (!Number.isInteger(taskId) || taskId < 1) {
