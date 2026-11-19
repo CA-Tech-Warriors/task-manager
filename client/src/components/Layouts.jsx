@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Logo } from './Icons';
+import { Logo, MoonIcon, SunIcon } from './Icons';
 
 export function Brand({ to = '/' }) {
   return (
@@ -11,6 +12,44 @@ export function Brand({ to = '/' }) {
   );
 }
 
+const THEME_STORAGE_KEY = 'task-manager-theme';
+
+function getInitialTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  if (currentTheme === 'dark' || currentTheme === 'light') {
+    return currentTheme;
+  }
+
+  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme === 'dark' || savedTheme === 'light') {
+    return savedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function ThemeToggleButton() {
+  const [theme, setTheme] = useState(getInitialTheme);
+  const nextThemeLabel = theme === 'dark' ? 'light' : 'dark';
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  return (
+    <button
+      type="button"
+      className="icon-button theme-toggle"
+      aria-label={`Switch to ${nextThemeLabel} mode`}
+      title={`Switch to ${nextThemeLabel} mode`}
+      onClick={() => setTheme((value) => (value === 'dark' ? 'light' : 'dark'))}
+    >
+      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+    </button>
+  );
+}
+
 // Header for public pages. The landing page shows the sign-up buttons.
 export function PublicHeader({ showActions = false }) {
   const { user } = useAuth();
@@ -18,9 +57,10 @@ export function PublicHeader({ showActions = false }) {
     <header className="site-header">
       <div className="site-header__inner">
         <Brand to={user ? '/dashboard' : '/'} />
-        {showActions && (
-          <div className="site-header__end">
-            {user ? (
+        <div className="site-header__end">
+          <ThemeToggleButton />
+          {showActions &&
+            (user ? (
               <Link to="/dashboard" className="btn btn--primary">
                 Open my tasks
               </Link>
@@ -33,9 +73,8 @@ export function PublicHeader({ showActions = false }) {
                   Sign up free
                 </Link>
               </>
-            )}
-          </div>
-        )}
+            ))}
+        </div>
       </div>
     </header>
   );
@@ -82,6 +121,7 @@ export function AppLayout() {
             )}
           </nav>
           <div className="site-header__end">
+            <ThemeToggleButton />
             <span className="user-chip">
               <span className="avatar" aria-hidden="true">
                 {(user?.username || '?').charAt(0).toUpperCase()}
