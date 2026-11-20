@@ -2,18 +2,43 @@
 // Each export is an array of express-validator checks, used as validate(rules) in auth.routes.js.
 const { body } = require('express-validator');
 
-// One rule written out as the pattern to follow.
-const username = body('username').trim().notEmpty().withMessage('Choose a username.');
+const username = body('username')
+  .trim()
+  .notEmpty()
+  .withMessage('Choose a username.')
+  .bail()
+  .isLength({ min: 3, max: 30 })
+  .withMessage('Use 3 to 30 characters.')
+  .matches(/^[A-Za-z0-9_.-]+$/)
+  .withMessage('Use letters, numbers, dots, dashes or underscores.');
 
-// TODO B-2: length 3 to 30, allowed characters, email format,
-// password 8+ characters with a letter and a number.
-const registerRules = [username];
+const email = body('email')
+  .trim()
+  .notEmpty()
+  .withMessage('Enter your email address.')
+  .bail()
+  .isEmail()
+  .withMessage('Enter a valid email address.');
 
-// TODO B-3: username field may hold a username or an email.
-const loginRules = [body('username').trim().notEmpty().withMessage('Enter your username or email.')];
+// 8+ characters with at least one letter and one number.
+const strongPassword = (field) =>
+  body(field)
+    .custom((value) => typeof value === 'string' && value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value))
+    .withMessage('Password must be 8+ characters with a letter and a number.');
 
-// TODO B-7
-const profileRules = [];
-const passwordRules = [];
+const registerRules = [username, email, strongPassword('password')];
+
+// The username field may hold a username or an email.
+const loginRules = [
+  body('username').trim().notEmpty().withMessage('Enter your username or email.'),
+  body('password').isString().notEmpty().withMessage('Enter your password.'),
+];
+
+const profileRules = [username, email];
+
+const passwordRules = [
+  body('currentPassword').isString().notEmpty().withMessage('Enter your current password.'),
+  strongPassword('newPassword'),
+];
 
 module.exports = { registerRules, loginRules, profileRules, passwordRules };

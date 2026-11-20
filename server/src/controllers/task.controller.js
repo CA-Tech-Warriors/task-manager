@@ -105,6 +105,56 @@ exports.stats = async (req, res) => {
     dueThisWeek: countDueThisWeek,
   });
 };
+//GET /api/tasks/stats returns counts per status and “due this week” for the logged-in user C-5
+exports.stats = async (req, res) => {
+  //finding Sunday of the current week
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+  //finding Sunday of the next week
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+  const [countTodo, countProgress, countDone, countDueThisWeek] = await Promise.all([
+    Task.count({
+      where: {
+        userId: req.user.id,
+        status: 'todo',
+      },
+    }),
+
+    Task.count({
+      where: {
+        userId: req.user.id,
+        status: 'in-progress',
+      },
+    }),
+
+    Task.count({
+      where: {
+        userId: req.user.id,
+        status: 'done',
+      },
+    }),
+
+    Task.count({
+      where: {
+        userId: req.user.id,
+        dueDate: {
+          [Op.gte]: startOfWeek,
+          [Op.lt]: endOfWeek,
+        },
+      },
+    }),
+  ]);
+
+  return res.status(200).json({
+    todo: countTodo,
+    'in-progress': countProgress,
+    done: countDone,
+    dueThisWeek: countDueThisWeek,
+  });
+};
 
 // POST /api/tasks  body { title, description, status, priority, dueDate }  201 task
 exports.create = async (req, res) => {
@@ -140,25 +190,25 @@ exports.getById = async (req, res) => {
 // PUT /api/tasks/:taskId  body: any task fields (the Board sends only what changed)  200 task
 exports.update = async (req, res) => {
   const { title, description, status, priority, dueDate } = req.body;
-
   const task = await Task.findByPk(req.params.taskId);
 
-  if (!task) {
-    return res.status(404).json({ message: 'Task can not be found' });
-  } else if (task.userId !== req.user.id) {
-    return res.status(403).json({ message: 'You are not authorized to edit this task.' });
-  } else {
-    await task.update({
-      title,
-      description,
-      status,
-      priority,
-      dueDate,
-    });
+  // Same answer for a missing task and someone else's, so nobody can probe other users' task IDs.
+  if (!task || task.userId !== req.user.id) {
+    throw ApiError.notFound('Task not found.');
   }
+
+  await task.update({
+    title,
+    description,
+    status,
+    priority,
+    dueDate,
+  });
 
   res.status(200).json(task);
 };
+
+// DELETE /api/tasks/:taskId  204
 
 // DELETE /api/tasks/:taskId  204
 exports.remove = async (req, res) => {

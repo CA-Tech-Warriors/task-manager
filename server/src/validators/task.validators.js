@@ -3,16 +3,23 @@ const { body, param, query } = require('express-validator');
 const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX } = require('../constants');
 const sanitizeHtml = require('sanitize-html');
 
+// Removes HTML tags, then turns entities like &amp; back into plain characters,
+// so "Tom & Jerry" is saved as typed. React escapes text when it displays it.
+const stripHtml = (value) => {
+  if (typeof value !== 'string') return value; // missing fields are left for the rules below to reject
+  return sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} })
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&');
+};
+
 const taskId = param('taskId').isInt({ min: 1 }).withMessage('Task ID must be a number.');
 
 // strip HTML from title and description.
 const title = body('title')
-  .customSanitizer((value) => {
-    return sanitizeHtml(value, {
-      allowedTags: [],
-      allowedAttributes: {},
-    });
-  })
+  .customSanitizer(stripHtml)
   .trim()
   .notEmpty()
   .withMessage('Give your task a title.')
@@ -22,12 +29,7 @@ const title = body('title')
 // description length, status in STATUSES, priority in PRIORITIES,
 const description = body('description')
   .optional()
-  .customSanitizer((value) => {
-    return sanitizeHtml(value, {
-      allowedTags: [],
-      allowedAttributes: {},
-    });
-  })
+  .customSanitizer(stripHtml)
   .trim()
   .isLength({ max: DESCRIPTION_MAX })
   .withMessage(`Keep the description to ${DESCRIPTION_MAX} characters or fewer.`);
@@ -51,12 +53,7 @@ const dueDate = body('dueDate')
 //update tasks
 const updateTitle = body('title')
   .optional()
-  .customSanitizer((value) => {
-    return sanitizeHtml(value, {
-      allowedTags: [],
-      allowedAttributes: {},
-    });
-  })
+  .customSanitizer(stripHtml)
   .trim()
   .notEmpty()
   .withMessage('Give your task a title.')

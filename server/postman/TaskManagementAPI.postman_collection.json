@@ -1,8 +1,7 @@
 {
   "info": {
-    "_postman_id": "9bd9f04a-4e80-43bb-b2fe-daa2dcf0fd5a",
-    "name": "TaskManagementAPI",
-    "description": "Postman collection for the Task Manager backend API. Note: some endpoints may return 501 until their controllers are fully implemented.",
+    "name": "Task Manager API",
+    "description": "Every endpoint, with status checks. Run it with the Local or Live environment from this folder. Each run registers its own user and deletes it at the end.\n\nOwner: D (card D-6).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -24,7 +23,18 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('database is connected', () => pm.expect(pm.response.json().database).to.eql('connected'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -41,10 +51,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{runUsername}}\",\n  \"email\": \"{{runEmail}}\",\n  \"password\": \"{{runPassword}}\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
               "host": [
@@ -54,6 +60,15 @@
                 "auth",
                 "register"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{runUsername}}\",\n  \"email\": \"{{runEmail}}\",\n  \"password\": \"{{runPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "event": [
@@ -62,9 +77,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
+                  "// A fresh user for every run, so the collection can run again and again.",
                   "const suffix = Date.now();",
-                  "pm.collectionVariables.set('runUsername', `user${suffix}`);",
-                  "pm.collectionVariables.set('runEmail', `user${suffix}@example.com`);",
+                  "pm.collectionVariables.set('runUsername', `pm${suffix}`);",
+                  "pm.collectionVariables.set('runEmail', `pm${suffix}@example.com`);",
                   "pm.collectionVariables.set('runPassword', 'Password123');"
                 ]
               }
@@ -74,15 +90,16 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const responseJson = pm.response.json();",
-                  "if (responseJson && responseJson.token) {",
-                  "  pm.collectionVariables.set('authToken', responseJson.token);",
-                  "}"
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns a token and the user', () => { pm.expect(body.token).to.be.a('string'); pm.expect(body.user.id).to.be.a('number'); });",
+                  "pm.test('never returns the password hash', () => pm.expect(body.user).to.not.have.property('passwordHash'));",
+                  "pm.collectionVariables.set('authToken', body.token);",
+                  "pm.collectionVariables.set('runUserId', body.user.id);"
                 ]
               }
             }
-          ],
-          "response": []
+          ]
         },
         {
           "name": "POST /auth/login",
@@ -94,10 +111,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{runUsername}}\",\n  \"password\": \"{{runPassword}}\",\n  \"rememberMe\": false\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
               "host": [
@@ -107,6 +120,15 @@
                 "auth",
                 "login"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{runUsername}}\",\n  \"password\": \"{{runPassword}}\",\n  \"rememberMe\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "event": [
@@ -115,15 +137,57 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const responseJson = pm.response.json();",
-                  "if (responseJson && responseJson.token) {",
-                  "  pm.collectionVariables.set('authToken', responseJson.token);",
-                  "}"
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('returns a token', () => pm.expect(body.token).to.be.a('string'));",
+                  "pm.collectionVariables.set('authToken', body.token);"
                 ]
               }
             }
-          ],
-          "response": []
+          ]
+        },
+        {
+          "name": "POST /auth/login (wrong password)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{runUsername}}\",\n  \"password\": \"WrongPass999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401', () => pm.response.to.have.status(401));",
+                  "pm.test('error has a message', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "GET /auth/me",
@@ -146,7 +210,18 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('is the user who logged in', () => pm.expect(pm.response.json().user.username).to.eql(pm.collectionVariables.get('runUsername')));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "GET /auth/profile",
@@ -169,7 +244,18 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('has username and email', () => { const u = pm.response.json().user; pm.expect(u.username).to.be.a('string'); pm.expect(u.email).to.be.a('string'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "PUT /auth/profile",
@@ -185,10 +271,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"alice-updated\",\n  \"email\": \"alice.updated@example.com\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/auth/profile",
               "host": [
@@ -198,9 +280,76 @@
                 "auth",
                 "profile"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{runUsername}}-new\",\n  \"email\": \"{{runUsername}}-new@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('username was updated', () => pm.expect(pm.response.json().user.username).to.eql(`${pm.collectionVariables.get('runUsername')}-new`));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /auth/password (wrong current)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"WrongPass999\",\n  \"newPassword\": \"NewPassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('points at currentPassword', () => pm.expect(pm.response.json().errors).to.have.property('currentPassword'));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "PUT /auth/password",
@@ -216,10 +365,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"currentPassword\": \"{{runPassword}}\",\n  \"newPassword\": \"NewPassword123\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/auth/password",
               "host": [
@@ -229,15 +374,157 @@
                 "auth",
                 "password"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"{{runPassword}}\",\n  \"newPassword\": \"NewPassword123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('runPassword', 'NewPassword123');"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Tasks",
       "item": [
+        {
+          "name": "GET /tasks (no token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401', () => pm.response.to.have.status(401));",
+                  "pm.test('error has a message', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /tasks (missing title)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"No title here\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('points at title', () => pm.expect(pm.response.json().errors).to.have.property('title'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /tasks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Finish Week 15 project\",\n  \"description\": \"Complete backend routes and tests.\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2026-11-20\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const task = pm.response.json();",
+                  "pm.test('saved with the right fields', () => { pm.expect(task.title).to.eql('Finish Week 15 project'); pm.expect(task.priority).to.eql('high'); });",
+                  "pm.collectionVariables.set('taskId', task.id);"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "GET /tasks",
           "request": {
@@ -249,7 +536,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/tasks?status=todo&priority=medium",
+              "raw": "{{baseUrl}}/tasks?status=todo&priority=high",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -263,12 +550,26 @@
                 },
                 {
                   "key": "priority",
-                  "value": "medium"
+                  "value": "high"
                 }
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test('returns a list', () => pm.expect(list).to.be.an('array'));",
+                  "pm.test('filters by status and priority', () => list.forEach((t) => { pm.expect(t.status).to.eql('todo'); pm.expect(t.priority).to.eql('high'); }));",
+                  "pm.test('includes the new task', () => pm.expect(list.map((t) => t.id)).to.include(Number(pm.collectionVariables.get('taskId'))));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "GET /tasks/stats",
@@ -291,37 +592,19 @@
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "POST /tasks",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{authToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test('has a count per status and due this week', () => ['todo', 'in-progress', 'done', 'dueThisWeek'].forEach((k) => pm.expect(s[k]).to.be.a('number')));"
+                ]
               }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Finish Week 15 project\",\n  \"description\": \"Complete backend routes and tests.\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2026-11-20\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/tasks",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "tasks"
-              ]
             }
-          },
-          "response": []
+          ]
         },
         {
           "name": "GET /tasks/:taskId",
@@ -344,7 +627,18 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('is the right task', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('taskId'))));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "PUT /tasks/:taskId",
@@ -360,10 +654,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"in-progress\",\n  \"priority\": \"medium\"\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/tasks/{{taskId}}",
               "host": [
@@ -373,9 +663,30 @@
                 "tasks",
                 "{{taskId}}"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in-progress\",\n  \"priority\": \"medium\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const task = pm.response.json();",
+                  "pm.test('changed only what was sent', () => { pm.expect(task.status).to.eql('in-progress'); pm.expect(task.priority).to.eql('medium'); pm.expect(task.title).to.eql('Finish Week 15 project'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "DELETE /tasks/:taskId",
@@ -398,13 +709,91 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tasks/:taskId (after delete)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 404', () => pm.response.to.have.status(404));",
+                  "pm.test('error has a message', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "Admin",
       "item": [
+        {
+          "name": "GET /admin/users (not an admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 403', () => pm.response.to.have.status(403));",
+                  "pm.test('error has a message', () => pm.expect(pm.response.json().message).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "POST /auth/login (admin)",
           "request": {
@@ -415,10 +804,6 @@
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"rememberMe\": false\n}"
-            },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
               "host": [
@@ -428,6 +813,15 @@
                 "auth",
                 "login"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"rememberMe\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "event": [
@@ -436,15 +830,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "const responseJson = pm.response.json();",
-                  "if (responseJson && responseJson.token) {",
-                  "  pm.collectionVariables.set('adminToken', responseJson.token);",
-                  "}"
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('is an admin', () => pm.expect(body.user.role).to.eql('admin'));",
+                  "pm.collectionVariables.set('adminToken', body.token);",
+                  "pm.collectionVariables.set('adminId', body.user.id);"
                 ]
               }
             }
-          ],
-          "response": []
+          ]
         },
         {
           "name": "GET /admin/users",
@@ -467,31 +861,66 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const users = pm.response.json();",
+                  "pm.test('every user has a role', () => users.forEach((u) => pm.expect(u.role).to.be.oneOf(['admin', 'user'])));",
+                  "pm.test('no password hashes', () => users.forEach((u) => pm.expect(u).to.not.have.property('passwordHash')));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "DELETE /admin/users/:userId",
+          "name": "POST /tasks (a task for the admin to delete)",
           "request": {
-            "method": "DELETE",
+            "method": "POST",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/users/{{userId}}",
+              "raw": "{{baseUrl}}/tasks",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "admin",
-                "users",
-                "{{userId}}"
+                "tasks"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Delete me, admin\",\n  \"priority\": \"low\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('adminTaskId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "GET /admin/tasks",
@@ -514,7 +943,19 @@
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const task = pm.response.json().find((t) => t.id === Number(pm.collectionVariables.get('adminTaskId')));",
+                  "pm.test(\"shows the owner's username\", () => pm.expect(task.owner).to.eql(`${pm.collectionVariables.get('runUsername')}-new`));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "DELETE /admin/tasks/:taskId",
@@ -527,18 +968,98 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/tasks/{{taskId}}",
+              "raw": "{{baseUrl}}/admin/tasks/{{adminTaskId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
                 "tasks",
-                "{{taskId}}"
+                "{{adminTaskId}}"
               ]
             }
           },
-          "response": []
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/users/:userId (yourself)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{adminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{adminId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('explains why', () => pm.expect(pm.response.json().message).to.include('your own account'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /admin/users/:userId (cleanup)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{runUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{runUserId}}"
+              ]
+            },
+            "description": "Deletes the user this run created, so test users don't pile up in the database."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
@@ -549,14 +1070,6 @@
       "value": "http://localhost:3001/api"
     },
     {
-      "key": "authToken",
-      "value": ""
-    },
-    {
-      "key": "adminToken",
-      "value": ""
-    },
-    {
       "key": "adminUsername",
       "value": "admin"
     },
@@ -565,12 +1078,40 @@
       "value": "admin123"
     },
     {
-      "key": "taskId",
-      "value": "1"
+      "key": "authToken",
+      "value": ""
     },
     {
-      "key": "userId",
-      "value": "1"
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "runUsername",
+      "value": ""
+    },
+    {
+      "key": "runEmail",
+      "value": ""
+    },
+    {
+      "key": "runPassword",
+      "value": ""
+    },
+    {
+      "key": "runUserId",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
+    },
+    {
+      "key": "adminTaskId",
+      "value": ""
     }
   ]
 }
