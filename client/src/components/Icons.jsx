@@ -101,6 +101,17 @@ export const DateIcon = (p) => (
     <path d="M3 10h18M8 3v4M16 3v4" />
   </Svg>
 );
+export const SunIcon = (p) => (
+  <Svg size={16} {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2.5M12 19.5V22M22 12h-2.5M4.5 12H2M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8M19.1 19.1l-1.8-1.8M6.7 6.7L4.9 4.9" />
+  </Svg>
+);
+export const MoonIcon = (p) => (
+  <Svg size={16} {...p}>
+    <path d="M20.2 14.5a8 8 0 1 1-10.7-10.7A8.5 8.5 0 1 0 20.2 14.5z" />
+  </Svg>
+);
 
 export function Logo() {
   return (
