@@ -35,7 +35,10 @@ describe('Error format (D-1)', () => {
   it('turns an ApiError into { message, errors } with its status', () => {
     const res = run(ApiError.badRequest('Some of the details need fixing.', { title: 'Give your task a title.' }));
     assert.equal(res.statusCode, 400);
-    assert.deepEqual(res.body, { message: 'Some of the details need fixing.', errors: { title: 'Give your task a title.' } });
+    assert.deepEqual(res.body, {
+      message: 'Some of the details need fixing.',
+      errors: { title: 'Give your task a title.' },
+    });
   });
 
   it('leaves out errors when there are none', () => {

@@ -110,7 +110,11 @@ describe('Auth', () => {
     stub(Role, 'findOne', async () => ({ id: 2 }));
     stub(User, 'create', async () => {
       const usernameError = new ValidationErrorItem('That username is taken.', 'unique violation', 'username');
-      const emailError = new ValidationErrorItem('An account with that email already exists.', 'unique violation', 'email');
+      const emailError = new ValidationErrorItem(
+        'An account with that email already exists.',
+        'unique violation',
+        'email',
+      );
       throw new UniqueConstraintError({ errors: [usernameError, emailError] });
     });
 

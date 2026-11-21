@@ -6,20 +6,20 @@ const { Role, User, Task } = require('../models');
 
 async function seed() {
   await sequelize.authenticate();
-  
+
   //Creates tables if they do not already exist
   await sequelize.sync();
-  
-  //Check if data already exists 
+
+  //Check if data already exists
   const existingAdmin = await User.findOne({ where: { username: 'admin' } });
 
   if (existingAdmin) {
-    console.log("Data already seeded")
-    return
+    console.log('Data already seeded');
+    return;
   }
 
   const [adminRole] = await Role.findOrCreate({ where: { name: 'admin' } });
-  const [userRole]  = await Role.findOrCreate({ where: { name: 'user'  } });
+  const [userRole] = await Role.findOrCreate({ where: { name: 'user' } });
 
   const adminPasswordHash = await bcrypt.hash('admin123', config.bcryptRounds);
   const alicePasswordHash = await bcrypt.hash('alice123', config.bcryptRounds);
@@ -52,18 +52,19 @@ async function seed() {
       priority: 'high',
       dueDate: today,
       userId: admin.id,
-    } ];
+    },
+  ];
 
-    const aliceSampleTasks = [
-      {
-        title: 'My First User Task',
-        description: 'Hi, I am Alice and I have the user role. I can create tasks and edit or delete the ones I own.',
-        status: 'in-progress',
-        priority: 'high',
-        dueDate: today,
-        userId: alice.id,
-      }
-    ];
+  const aliceSampleTasks = [
+    {
+      title: 'My First User Task',
+      description: 'Hi, I am Alice and I have the user role. I can create tasks and edit or delete the ones I own.',
+      status: 'in-progress',
+      priority: 'high',
+      dueDate: today,
+      userId: alice.id,
+    },
+  ];
 
   if (adminCreated) {
     await Task.bulkCreate(adminSampleTasks);
