@@ -13,8 +13,6 @@ describe('Database', function () {
     }
   });
 
- 
-
   it('connects', async () => {
     const [rows] = await sequelize.query('SELECT 1 AS ok');
     assert.equal(rows[0].ok, 1);

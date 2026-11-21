@@ -54,7 +54,6 @@ exports.list = async (req, res) => {
   return res.status(200).json(tasks);
 };
 
-// GET /api/tasks/stats  200 { todo, 'in-progress', done, dueThisWeek }
 //GET /api/tasks/stats returns counts per status and “due this week” for the logged-in user C-5
 exports.stats = async (req, res) => {
   //finding Sunday of the current week
@@ -157,8 +156,6 @@ exports.update = async (req, res) => {
 
   res.status(200).json(task);
 };
-
-// DELETE /api/tasks/:taskId  204
 
 // DELETE /api/tasks/:taskId  204
 exports.remove = async (req, res) => {
