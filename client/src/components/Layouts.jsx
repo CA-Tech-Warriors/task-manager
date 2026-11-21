@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Logo } from './Icons';
+import { useTheme } from '../context/ThemeContext';
+import { Logo, MoonIcon, SunIcon } from './Icons';
 
 export function Brand({ to = '/' }) {
   return (
@@ -14,13 +15,28 @@ export function Brand({ to = '/' }) {
 // Header for public pages. The landing page shows the sign-up buttons.
 export function PublicHeader({ showActions = false }) {
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+
+  const themeButton = (
+    <button
+      type="button"
+      className="icon-button theme-toggle"
+      onClick={toggleTheme}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+    >
+      {isDark ? <SunIcon /> : <MoonIcon />}
+    </button>
+  );
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
         <Brand to={user ? '/dashboard' : '/'} />
-        {showActions && (
-          <div className="site-header__end">
-            {user ? (
+        <div className="site-header__end">
+          {themeButton}
+          {showActions &&
+            (user ? (
               <Link to="/dashboard" className="btn btn--primary">
                 Open my tasks
               </Link>
@@ -33,9 +49,8 @@ export function PublicHeader({ showActions = false }) {
                   Sign up free
                 </Link>
               </>
-            )}
-          </div>
-        )}
+            ))}
+        </div>
       </div>
     </header>
   );
@@ -45,6 +60,7 @@ const TASK_PATHS = ['/dashboard', '/board', '/tasks'];
 
 export function AppLayout() {
   const { user, isAdmin, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const onTasks = TASK_PATHS.some((p) => pathname.startsWith(p));
@@ -82,6 +98,15 @@ export function AppLayout() {
             )}
           </nav>
           <div className="site-header__end">
+            <button
+              type="button"
+              className="icon-button theme-toggle"
+              onClick={toggleTheme}
+              aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            >
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
             <span className="user-chip">
               <span className="avatar" aria-hidden="true">
                 {(user?.username || '?').charAt(0).toUpperCase()}
