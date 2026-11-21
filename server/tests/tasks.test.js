@@ -342,14 +342,30 @@ describe('Tasks', function () {
   });
 
   it("returns 404 for another user's task", async function () {
+    const fakeTask = {
+      id: 1,
+      userId: 1,
+      title: 'Private task',
+      status: 'todo',
+      priority: 'low',
+    };
+
+    stub(Task, 'create', async (data) => ({
+      id: 1,
+      ...data,
+    }));
+
+    stub(Task, 'findByPk', async () => fakeTask);
+
     const resCreate = await api().post('/api/tasks').set('Authorization', `Bearer ${token}`).send({
       title: 'Private task',
       status: 'todo',
       priority: 'low',
     });
 
-    const task = resCreate.body;
+    assert.equal(resCreate.status, 201);
 
+    const task = resCreate.body;
     const otherUserToken = tokenFor('user', 2);
 
     const res = await api().get(`/api/tasks/${task.id}`).set('Authorization', `Bearer ${otherUserToken}`);
