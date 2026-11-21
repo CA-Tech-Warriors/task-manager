@@ -1,10 +1,15 @@
 const assert = require('node:assert/strict');
 const { api, tokenFor } = require('./helpers');
 const { Task } = require('../src/models');
+const { state } = require('../src/db');
 
 const token = tokenFor('user', 1);
 
-describe('Task C-1', function () {
+describe('Tasks', function () {
+  before(() => {
+    state.connected = true;
+  });
+
   it('C-1 rejects a missing title, bad status, bad priority or bad date with 400', async function () {
     const invalidTasks = [
       { status: 'todo', priority: 'low' },
@@ -19,9 +24,7 @@ describe('Task C-1', function () {
       assert.equal(res.status, 400);
     }
   });
-});
 
-describe('Task C-2', function () {
   it('C-2 strips HTML from title and description', async function () {
     const res = await api()
       .post('/api/tasks')
@@ -32,9 +35,7 @@ describe('Task C-2', function () {
     assert.equal(res.body.title, 'title');
     assert.equal(res.body.description, 'paragraph');
   });
-});
 
-describe('Task C-3', function () {
   it('C-3 updates only status when the body has only status', async function () {
     //create initial task that will be edited
     const resCreate = await api().post('/api/tasks').set('Authorization', `Bearer ${token}`).send({
@@ -58,86 +59,86 @@ describe('Task C-3', function () {
     assert.equal(res.body.description, 'Complete the API');
     assert.equal(res.body.priority, 'high');
   });
-});
 
-describe('C-4 Tasks', function () {
-  let tasks;
+  describe('C-4 Tasks', function () {
+    let tasks;
 
-  before(async function () {
-    tasks = await Task.bulkCreate([
-      {
-        title: 'Finish website',
-        status: 'todo',
-        priority: 'high',
-        dueDate: '2026-12-18',
-        createdAt: '2026-10-14T11:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Buy groceries',
-        status: 'done',
-        priority: 'low',
-        dueDate: '2026-11-20',
-        createdAt: '2026-11-18T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Study React',
-        status: 'in-progress',
-        priority: 'medium',
-        dueDate: '2027-02-20',
-        createdAt: '2026-10-14T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Do the dishes',
-        status: 'todo',
-        priority: 'medium',
-        dueDate: '2026-11-30',
-        createdAt: '2026-11-18T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Clean the car',
-        status: 'done',
-        priority: 'low',
-        dueDate: '2026-11-20',
-        createdAt: '2026-11-02T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Buy cat food',
-        status: 'done',
-        priority: 'high',
-        dueDate: '2026-11-22',
-        createdAt: '2026-11-10T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Finish Codecademy project',
-        status: 'in-progress',
-        priority: 'high',
-        dueDate: '2026-12-31',
-        createdAt: '2026-11-18T12:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Car registration',
-        status: 'todo',
-        priority: 'medium',
-        dueDate: '2026-12-01',
-        createdAt: '2026-10-14T08:00:00.000Z',
-        userId: 1,
-      },
-      {
-        title: 'Fold laundry',
-        status: 'done',
-        priority: 'low',
-        dueDate: '2026-11-25',
-        createdAt: '2026-11-08T12:00:00.000Z',
-        userId: 1,
-      },
-    ]);
+    before(async function () {
+      tasks = await Task.bulkCreate([
+        {
+          title: 'Finish website',
+          status: 'todo',
+          priority: 'high',
+          dueDate: '2026-12-18',
+          createdAt: '2026-10-14T11:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Buy groceries',
+          status: 'done',
+          priority: 'low',
+          dueDate: '2026-11-20',
+          createdAt: '2026-11-18T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Study React',
+          status: 'in-progress',
+          priority: 'medium',
+          dueDate: '2027-02-20',
+          createdAt: '2026-10-14T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Do the dishes',
+          status: 'todo',
+          priority: 'medium',
+          dueDate: '2026-11-30',
+          createdAt: '2026-11-18T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Clean the car',
+          status: 'done',
+          priority: 'low',
+          dueDate: '2026-11-20',
+          createdAt: '2026-11-02T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Buy cat food',
+          status: 'done',
+          priority: 'high',
+          dueDate: '2026-11-22',
+          createdAt: '2026-11-10T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Finish Codecademy project',
+          status: 'in-progress',
+          priority: 'high',
+          dueDate: '2026-12-31',
+          createdAt: '2026-11-18T12:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Car registration',
+          status: 'todo',
+          priority: 'medium',
+          dueDate: '2026-12-01',
+          createdAt: '2026-10-14T08:00:00.000Z',
+          userId: 1,
+        },
+        {
+          title: 'Fold laundry',
+          status: 'done',
+          priority: 'low',
+          dueDate: '2026-11-25',
+          createdAt: '2026-11-08T12:00:00.000Z',
+          userId: 1,
+        },
+      ]);
+    });
 
     it('filters by status', async function () {
       const res = await api().get('/api/tasks?status=todo').set('Authorization', `Bearer ${token}`);
@@ -177,7 +178,11 @@ describe('C-4 Tasks', function () {
       assert.equal(res.status, 200);
 
       const dates = res.body.map((task) => task.dueDate);
-      assert.deepEqual(dates, [...dates].sort().reverse());
+      const datesWithoutNull = dates.filter((date) => date !== null);
+
+      assert.deepEqual(datesWithoutNull, [...datesWithoutNull].sort().reverse());
+
+      assert.ok(dates.slice(0, datesWithoutNull.length).every((date) => date !== null));
     });
 
     it('sorts tasks by createdAt ascending', async function () {
@@ -223,6 +228,10 @@ describe('C-4 Tasks', function () {
 
       const lastWeekSaturday = new Date(startOfWeek);
       lastWeekSaturday.setDate(startOfWeek.getDate() - 1);
+
+      await Task.destroy({
+        where: { userId: 1 },
+      });
 
       await Task.bulkCreate([
         {
@@ -303,41 +312,37 @@ describe('C-4 Tasks', function () {
       const res = await api().get('/api/tasks/stats').set('Authorization', `Bearer ${token}`);
 
       assert.equal(res.status, 200);
-      assert.equal(res.body.dueThisWeek, 5);
+      assert.equal(res.body.dueThisWeek, 3);
     });
   });
 
-  describe('Task C-6', function () {
-    it("returns 404 for another user's task", async function () {
-      const resCreate = await api().post('/api/tasks').set('Authorization', `Bearer ${token}`).send({
-        title: 'Private task',
-        status: 'todo',
-        priority: 'low',
-      });
-
-      const task = resCreate.body;
-
-      const otherUserToken = tokenFor('user', 2);
-
-      const res = await api().get(`/api/tasks/${task.id}`).set('Authorization', `Bearer ${otherUserToken}`);
-
-      assert.equal(res.status, 404);
+  it("returns 404 for another user's task", async function () {
+    const resCreate = await api().post('/api/tasks').set('Authorization', `Bearer ${token}`).send({
+      title: 'Private task',
+      status: 'todo',
+      priority: 'low',
     });
+
+    const task = resCreate.body;
+
+    const otherUserToken = tokenFor('user', 2);
+
+    const res = await api().get(`/api/tasks/${task.id}`).set('Authorization', `Bearer ${otherUserToken}`);
+
+    assert.equal(res.status, 404);
   });
 
-  describe('Task C-6', function () {
-    it('C-6 answers 201 on create and 204 on delete', async function () {
-      const resCreate = await api()
-        .post(`/api/tasks/`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({ title: 'Test task', status: 'todo', priority: 'low' });
-      //task to delete
-      const task = resCreate.body;
+  it('C-6 answers 201 on create and 204 on delete', async function () {
+    const resCreate = await api()
+      .post(`/api/tasks/`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Test task', status: 'todo', priority: 'low' });
+    //task to delete
+    const task = resCreate.body;
 
-      const resDelete = await api().delete(`/api/tasks/${task.id}`).set('Authorization', `Bearer ${token}`);
+    const resDelete = await api().delete(`/api/tasks/${task.id}`).set('Authorization', `Bearer ${token}`);
 
-      assert.equal(resCreate.status, 201);
-      assert.equal(resDelete.status, 204);
-    });
+    assert.equal(resCreate.status, 201);
+    assert.equal(resDelete.status, 204);
   });
 });

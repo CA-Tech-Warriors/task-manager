@@ -208,7 +208,6 @@ exports.update = async (req, res) => {
   res.status(200).json(task);
 };
 
-// DELETE /api/tasks/:taskId  204
 
 // DELETE /api/tasks/:taskId  204
 exports.remove = async (req, res) => {
