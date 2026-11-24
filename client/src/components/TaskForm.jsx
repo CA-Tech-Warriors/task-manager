@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DESCRIPTION_MAX, PRIORITIES, STATUSES, TITLE_MAX } from '../config';
+import { CATEGORY_MAX, DESCRIPTION_MAX, PRIORITIES, STATUSES, TITLE_MAX } from '../config';
 import { formatDate, todayISO, toISODate } from '../utils/dates';
 import { validateTask } from '../utils/validation';
 import { BusyButton, FieldError, PriorityBadge, StatusBadge } from './ui';
@@ -12,6 +12,7 @@ const EMPTY_TASK = {
   status: STATUSES[0].value,
   priority: PRIORITIES[1].value,
   dueDate: '',
+  category: 'Personal',
 };
 
 const quickDates = () => [
@@ -185,6 +186,27 @@ export default function TaskForm({
             ))}
           </div>
           <FieldError id="task-dueDate-error" message={errors.dueDate} />
+        </div>
+
+        <div className="field">
+          <div className="field__top">
+            <label htmlFor="task-category" className="field__label">
+              Over-write if not personal
+            </label>
+            <span className="field__count">
+              {task.category.length} / {CATEGORY_MAX}
+            </span>
+          </div>
+          <input
+            id="task-category"
+            className="input"
+            value={task.category}
+            onChange={set('category')}
+            maxLength={CATEGORY_MAX}
+            aria-invalid={Boolean(errors.category)}
+            aria-describedby={errors.category ? 'task-category-error' : undefined}
+          />
+          <FieldError id="task-category-error" message={errors.category} />
         </div>
 
         <div className="form-actions">

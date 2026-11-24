@@ -8,6 +8,10 @@ async function start() {
     await sequelize.authenticate();
     // TODO A-3: switch to migrations if the team wants them; sync is fine for this project.
     await sequelize.sync();
+    await sequelize.query(
+      `ALTER TABLE "tasks"
+       ADD COLUMN IF NOT EXISTS "category" VARCHAR(30) NOT NULL DEFAULT 'Personal';`,
+    );
     state.connected = true;
     console.log('Database connected');
   } catch (err) {

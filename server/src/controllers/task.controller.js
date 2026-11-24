@@ -5,7 +5,7 @@ const { Op } = require('sequelize');
 const { Task } = require('../models');
 const { taskId } = require('../validators/task.validators');
 
-// GET /api/tasks?status=&priority=&search=&sortBy=createdAt|dueDate&order=asc|desc
+// GET /api/tasks?status=&category=&priority=&search=&sortBy=createdAt|dueDate&order=asc|desc
 // 200 [task, ...]  (tasks with no due date sort last)
 
 exports.list = async (req, res) => {
@@ -31,9 +31,13 @@ exports.list = async (req, res) => {
     ];
   }
 
-  //filter by status and priority
+  //filter by status, category and priority
   if (req.query.status) {
     filters.status = req.query.status;
+  }
+
+  if (req.query.category) {
+    filters.category = req.query.category;
   }
 
   if (req.query.priority) {
@@ -105,9 +109,9 @@ exports.stats = async (req, res) => {
   });
 };
 
-// POST /api/tasks  body { title, description, status, priority, dueDate }  201 task
+// POST /api/tasks  body { title, description, status, priority, category, dueDate }  201 task
 exports.create = async (req, res) => {
-  const { title, description, status, priority, dueDate } = req.body;
+  const { title, description, status, priority, category, dueDate } = req.body;
 
   const newTask = await Task.create({
     userId: req.user.id,
@@ -115,6 +119,7 @@ exports.create = async (req, res) => {
     description,
     status,
     priority,
+    category,
     dueDate,
   });
 
@@ -138,7 +143,7 @@ exports.getById = async (req, res) => {
 
 // PUT /api/tasks/:taskId  body: any task fields (the Board sends only what changed)  200 task
 exports.update = async (req, res) => {
-  const { title, description, status, priority, dueDate } = req.body;
+  const { title, description, status, priority, category, dueDate } = req.body;
   const task = await Task.findByPk(req.params.taskId);
 
   // Same answer for a missing task and someone else's, so nobody can probe other users' task IDs.
@@ -151,6 +156,7 @@ exports.update = async (req, res) => {
     description,
     status,
     priority,
+    category,
     dueDate,
   });
 

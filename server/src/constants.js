@@ -6,5 +6,6 @@ const ROLES = ['admin', 'user'];
 
 const TITLE_MAX = 100;
 const DESCRIPTION_MAX = 500;
+const CATEGORY_MAX = 30;
 
-module.exports = { STATUSES, PRIORITIES, ROLES, TITLE_MAX, DESCRIPTION_MAX };
+module.exports = { STATUSES, PRIORITIES, ROLES, TITLE_MAX, DESCRIPTION_MAX, CATEGORY_MAX };

@@ -67,8 +67,8 @@ If the Task model uses other strings, change them there.
 | GET | `/api/auth/profile` | Profile page |
 | PUT | `/api/auth/profile` | Save username and email (team card B-7) |
 | PUT | `/api/auth/password` | Body: `{ currentPassword, newPassword }` (team card B-7) |
-| GET | `/api/tasks` | Query: `status`, `priority`, `search`, `sortBy` (`dueDate` or `createdAt`), `order` (`asc` or `desc`) |
-| POST | `/api/tasks` | Body: `{ title, description, status, priority, dueDate }` |
+| GET | `/api/tasks` | Query: `status`, `category`, `priority`, `search`, `sortBy` (`dueDate` or `createdAt`), `order` (`asc` or `desc`) |
+| POST | `/api/tasks` | Body: `{ title, description, status, priority, category, dueDate }` |
 | GET, PUT, DELETE | `/api/tasks/:taskId` | Edit page, mark done, board moves, delete |
 | GET | `/api/admin/users`, `/api/admin/tasks` | Admin page |
 | PUT | `/api/admin/users/:userId/role` | Admin page role updates |

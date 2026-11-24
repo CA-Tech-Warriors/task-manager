@@ -32,6 +32,7 @@ export function normalizeTask(raw) {
     description: raw.description ?? '',
     status: raw.status ?? STATUS_TODO,
     priority: raw.priority ?? PRIORITIES[1].value,
+    category: raw.category ?? 'Personal',
     dueDate: raw.dueDate ?? raw.due_date ?? null,
     createdAt: raw.createdAt ?? raw.created_at ?? null,
     updatedAt: raw.updatedAt ?? raw.updated_at ?? null,
@@ -49,6 +50,7 @@ export const taskPayload = (task) => ({
   description: (task.description || '').trim(),
   status: task.status,
   priority: task.priority,
+  category: (task.category || 'Personal').trim() || 'Personal',
   dueDate: task.dueDate || null,
 });
 
@@ -74,7 +76,7 @@ export const authApi = {
 };
 
 export const taskApi = {
-  // params: status, priority, search, sortBy (createdAt | dueDate), order (asc | desc)
+  // params: status, category, priority, search, sortBy (createdAt | dueDate), order (asc | desc)
   list: (params) => request('/api/tasks', { params }).then((d) => asList(d, 'tasks').map(normalizeTask)),
   get: (id) => request(taskPath(id)).then((d) => normalizeTask(unwrap(d, 'task'))),
   create: (task) => request('/api/tasks', { method: 'POST', body: taskPayload(task) }),

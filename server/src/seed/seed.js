@@ -9,6 +9,10 @@ async function seed() {
 
   //Creates tables if they do not already exist
   await sequelize.sync();
+  await sequelize.query(
+    `ALTER TABLE "tasks"
+     ADD COLUMN IF NOT EXISTS "category" VARCHAR(30) NOT NULL DEFAULT 'Personal';`,
+  );
 
   //Check if data already exists
   const existingAdmin = await User.findOne({ where: { username: 'admin' } });
