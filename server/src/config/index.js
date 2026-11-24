@@ -1,5 +1,14 @@
 // Reads every environment variable in one place. Owner: D (B for the JWT values).
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load from server/.env first, then allow server/src/.env as a fallback.
+const serverEnvPath = path.resolve(__dirname, '../../.env');
+const srcEnvPath = path.resolve(__dirname, '../.env');
+const loadedPrimary = dotenv.config({ path: serverEnvPath, override: true });
+if (loadedPrimary.error) {
+  dotenv.config({ path: srcEnvPath, override: true });
+}
 
 const env = process.env.NODE_ENV || 'development';
 const isProduction = env === 'production';

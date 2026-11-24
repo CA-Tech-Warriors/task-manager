@@ -143,6 +143,81 @@ describe('Admin', () => {
     });
   });
 
+  describe('PUT /api/admin/users/:userId/role', () => {
+    it('D-2 stops an admin changing their own role', async () => {
+      let looked = false;
+      stub(User, 'findByPk', async () => {
+        looked = true;
+        return null;
+      });
+
+      const res = await api()
+        .put(`/api/admin/users/${ADMIN_ID}/role`)
+        .set('Authorization', `Bearer ${adminToken()}`)
+        .send({ role: 'user' });
+
+      assert.equal(res.status, 400);
+      assert.equal(res.body.message, "You can't change your own role.");
+      assert.equal(looked, false);
+    });
+
+    it('D-2 answers 400 when role is invalid', async () => {
+      const res = await api()
+        .put('/api/admin/users/2/role')
+        .set('Authorization', `Bearer ${adminToken()}`)
+        .send({ role: 'owner' });
+
+      assert.equal(res.status, 400);
+      assert.ok(res.body.errors.role);
+    });
+
+    it('D-2 answers 404 for a user that does not exist', async () => {
+      stub(User, 'findByPk', async () => null);
+
+      const res = await api()
+        .put('/api/admin/users/999/role')
+        .set('Authorization', `Bearer ${adminToken()}`)
+        .send({ role: 'admin' });
+
+      assert.equal(res.status, 404);
+      assert.equal(res.body.message, 'User not found.');
+    });
+
+    it('D-2 updates another user role and answers 200 with the updated user', async () => {
+      const user = {
+        id: 2,
+        roleId: 2,
+        Role: { name: 'user' },
+        update: async ({ roleId }) => {
+          user.roleId = roleId;
+        },
+        reload: async () => {
+          user.Role = { name: 'admin' };
+        },
+        toJSON: () => ({
+          id: 2,
+          username: 'alice',
+          email: 'alice@example.com',
+          createdAt: '2026-11-02T00:00:00.000Z',
+          Role: user.Role,
+        }),
+      };
+
+      stub(User, 'findByPk', async (id) => (id === 2 ? user : null));
+      stub(Role, 'findOne', async ({ where }) => (where.name === 'admin' ? { id: 1, name: 'admin' } : null));
+
+      const res = await api()
+        .put('/api/admin/users/2/role')
+        .set('Authorization', `Bearer ${adminToken()}`)
+        .send({ role: 'admin' });
+
+      assert.equal(res.status, 200);
+      assert.equal(res.body.id, 2);
+      assert.equal(res.body.role, 'admin');
+      assert.equal(user.roleId, 1);
+    });
+  });
+
   describe('DELETE /api/admin/tasks/:taskId', () => {
     it('D-2 answers 404 for a task that does not exist', async () => {
       stub(Task, 'findByPk', async () => null);

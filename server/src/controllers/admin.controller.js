@@ -1,5 +1,6 @@
 // /api/admin handlers. Owner: D (card D-2). Only admins reach these (see admin.routes.js).
 const ApiError = require('../utils/ApiError');
+const { ROLES } = require('../constants');
 const { User, Role, Task } = require('../models');
 
 // GET /api/admin/users  200 [user, ...]  (each user includes role name)
@@ -21,6 +22,43 @@ exports.listUsers = async (req, res) => {
   });
 
   return res.status(200).json(payload);
+};
+
+// PUT /api/admin/users/:userId/role  body { role }  200 user  |  400 invalid data/self-change  |  404 missing user
+exports.updateUserRole = async (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!Number.isInteger(userId) || userId < 1) {
+    throw ApiError.badRequest('Some of the details need fixing.', { userId: 'User ID must be a number.' });
+  }
+
+  if (userId === req.user.id) {
+    throw ApiError.badRequest("You can't change your own role.");
+  }
+
+  const roleName = typeof req.body?.role === 'string' ? req.body.role.trim().toLowerCase() : '';
+  if (!ROLES.includes(roleName)) {
+    throw ApiError.badRequest('Some of the details need fixing.', { role: 'Role must be "admin" or "user".' });
+  }
+
+  const account = await User.findByPk(userId, { include: [{ model: Role, attributes: ['name'] }] });
+  if (!account) throw ApiError.notFound('User not found.');
+
+  const role = await Role.findOne({ where: { name: roleName } });
+  if (!role) throw new ApiError(500, `Server setup is incomplete. Missing role "${roleName}".`);
+
+  if (account.roleId !== role.id) {
+    await account.update({ roleId: role.id });
+    await account.reload({ include: [{ model: Role, attributes: ['name'] }] });
+  }
+
+  const user = account.toJSON();
+  return res.status(200).json({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.Role?.name || roleName,
+    createdAt: user.createdAt,
+  });
 };
 
 // DELETE /api/admin/users/:userId  204  |  400 when deleting yourself  |  404 when missing

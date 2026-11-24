@@ -8,6 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
 router.use(requireAuth, requireRole('admin'), requireDatabase);
 
 router.get('/users', asyncHandler(admin.listUsers));
+router.put('/users/:userId/role', asyncHandler(admin.updateUserRole));
 router.delete('/users/:userId', asyncHandler(admin.deleteUser));
 router.get('/tasks', asyncHandler(admin.listTasks));
 router.delete('/tasks/:taskId', asyncHandler(admin.deleteTask));

@@ -15,6 +15,8 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [confirmKey, setConfirmKey] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
+  const [roleEdits, setRoleEdits] = useState({});
+  const [roleBusyId, setRoleBusyId] = useState(null);
 
   const load = useCallback(async () => {
     setError('');
@@ -32,6 +34,15 @@ export default function Admin() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    setRoleEdits(
+      users.reduce((acc, entry) => {
+        acc[entry.id] = entry.role;
+        return acc;
+      }, {}),
+    );
+  }, [users]);
 
   const remove = async (kind, item) => {
     const key = `${kind}-${item.id}`;
@@ -78,6 +89,22 @@ export default function Admin() {
         Delete
       </button>
     );
+  };
+
+  const saveRole = async (entry) => {
+    const selectedRole = roleEdits[entry.id] || entry.role;
+    if (selectedRole === entry.role) return;
+
+    setRoleBusyId(entry.id);
+    try {
+      await adminApi.updateUserRole(entry.id, selectedRole);
+      showToast(`Updated ${entry.username} to ${selectedRole}.`);
+      await load();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setRoleBusyId(null);
+    }
   };
 
   const ownerName = (task) =>
@@ -136,6 +163,7 @@ export default function Admin() {
               <tbody>
                 {users.map((u) => {
                   const isMe = String(u.id) === String(user?.id);
+                  const selectedRole = roleEdits[u.id] || u.role;
                   return (
                     <tr key={u.id}>
                       <td>
@@ -155,7 +183,33 @@ export default function Admin() {
                       </td>
                       <td className="num">{taskCount(u)}</td>
                       <td>{formatDate(u.createdAt, { year: true }) || 'Unknown'}</td>
-                      <td className="actions">{!isMe && deleteControls('user', u, `user ${u.username}`)}</td>
+                      <td className="actions">
+                        {!isMe && (
+                          <span className="user-row-actions">
+                            <select
+                              className="select"
+                              value={selectedRole}
+                              onChange={(event) =>
+                                setRoleEdits((current) => ({ ...current, [u.id]: event.target.value }))
+                              }
+                              disabled={roleBusyId === u.id}
+                              aria-label={`Role for ${u.username}`}
+                            >
+                              <option value="user">User</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                            <button
+                              type="button"
+                              className="btn btn--small btn--secondary"
+                              disabled={roleBusyId === u.id || selectedRole === u.role}
+                              onClick={() => saveRole(u)}
+                            >
+                              Update
+                            </button>
+                            {deleteControls('user', u, `user ${u.username}`)}
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}

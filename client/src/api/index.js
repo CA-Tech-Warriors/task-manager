@@ -85,6 +85,10 @@ export const taskApi = {
 export const adminApi = {
   users: () => request('/api/admin/users').then((d) => asList(d, 'users').map(normalizeUser)),
   tasks: () => request('/api/admin/tasks').then((d) => asList(d, 'tasks').map(normalizeTask)),
+  updateUserRole: (id, role) =>
+    request(`/api/admin/users/${encodeURIComponent(id)}/role`, { method: 'PUT', body: { role } }).then((d) =>
+      normalizeUser(unwrap(d, 'user')),
+    ),
   deleteUser: (id) => request(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   deleteTask: (id) => request(`/api/admin/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
