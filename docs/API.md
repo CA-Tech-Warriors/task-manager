@@ -70,6 +70,7 @@ Every error uses one shape. `errors` appears only when specific fields are wrong
 | PUT | `/api/tasks/:taskId` | any task fields; missing fields stay unchanged | 200 `task` |
 | DELETE | `/api/tasks/:taskId` | | 204 |
 | GET | `/api/admin/users` | | 200 `[user]` |
+| PUT | `/api/admin/users/:userId/role` | `{ role }` (`admin` or `user`) | 200 `user` |
 | DELETE | `/api/admin/users/:userId` | | 204 |
 | GET | `/api/admin/tasks` | | 200 `[task + owner]` |
 | DELETE | `/api/admin/tasks/:taskId` | | 204 |

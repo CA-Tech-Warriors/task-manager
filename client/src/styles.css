@@ -1599,6 +1599,11 @@ legend.field__label {
   display: inline-flex;
   gap: 6px;
 }
+.user-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* ---------- Small screens ---------- */
 

@@ -71,6 +71,7 @@ If the Task model uses other strings, change them there.
 | POST | `/api/tasks` | Body: `{ title, description, status, priority, dueDate }` |
 | GET, PUT, DELETE | `/api/tasks/:taskId` | Edit page, mark done, board moves, delete |
 | GET | `/api/admin/users`, `/api/admin/tasks` | Admin page |
+| PUT | `/api/admin/users/:userId/role` | Admin page role updates |
 | DELETE | `/api/admin/users/:userId`, `/api/admin/tasks/:taskId` | Admin page |
 
 **Response shapes it accepts**
