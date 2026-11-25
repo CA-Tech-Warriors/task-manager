@@ -39,6 +39,7 @@ describe('Tasks', function () {
       { title: 'Test task', status: 'invalid-status', priority: 'low' },
       { title: 'Test task', status: 'todo', priority: 'invalid-priority' },
       { title: 'Test task', status: 'todo', priority: 'low', dueDate: 'not-a-date' },
+      { title: 'Test task', status: 'todo', priority: 'low', category: 'x'.repeat(31) },
     ];
 
     for (const task of invalidTasks) {
@@ -57,11 +58,12 @@ describe('Tasks', function () {
     const res = await api()
       .post('/api/tasks')
       .set('Authorization', `Bearer ${token}`)
-      .send({ title: '<h1> title </h1>', description: ' <p> paragraph </p> ' });
+      .send({ title: '<h1> title </h1>', description: ' <p> paragraph </p> ', category: ' <b>Work</b> ' });
 
     assert.equal(res.status, 201);
     assert.equal(res.body.title, 'title');
     assert.equal(res.body.description, 'paragraph');
+    assert.equal(res.body.category, 'Work');
   });
 
   it('C-3 updates only status when the body has only status', async function () {
@@ -119,6 +121,7 @@ describe('Tasks', function () {
         id: 1,
         title: 'Finish website',
         status: 'todo',
+        category: 'Work',
         priority: 'high',
         dueDate: '2026-12-18',
         createdAt: '2026-10-14T11:00:00.000Z',
@@ -128,6 +131,7 @@ describe('Tasks', function () {
         id: 2,
         title: 'Buy groceries',
         status: 'done',
+        category: 'Personal',
         priority: 'low',
         dueDate: '2026-11-20',
         createdAt: '2026-11-18T12:00:00.000Z',
@@ -137,6 +141,7 @@ describe('Tasks', function () {
         id: 3,
         title: 'Study React',
         status: 'in-progress',
+        category: 'Study',
         priority: 'medium',
         dueDate: '2027-02-20',
         createdAt: '2026-10-14T12:00:00.000Z',
@@ -146,6 +151,7 @@ describe('Tasks', function () {
         id: 4,
         title: 'Do the dishes',
         status: 'todo',
+        category: 'Home',
         priority: 'medium',
         dueDate: '2026-11-30',
         createdAt: '2026-11-18T12:00:00.000Z',
@@ -155,6 +161,7 @@ describe('Tasks', function () {
         id: 5,
         title: 'Clean the car',
         status: 'done',
+        category: 'Personal',
         priority: 'low',
         dueDate: '2026-11-20',
         createdAt: '2026-11-02T12:00:00.000Z',
@@ -164,6 +171,7 @@ describe('Tasks', function () {
         id: 6,
         title: 'Buy cat food',
         status: 'done',
+        category: 'Personal',
         priority: 'high',
         dueDate: '2026-11-22',
         createdAt: '2026-11-10T12:00:00.000Z',
@@ -173,6 +181,7 @@ describe('Tasks', function () {
         id: 7,
         title: 'Finish Codecademy project',
         status: 'in-progress',
+        category: 'Study',
         priority: 'high',
         dueDate: '2026-12-31',
         createdAt: '2026-11-18T12:00:00.000Z',
@@ -182,6 +191,7 @@ describe('Tasks', function () {
         id: 8,
         title: 'Car registration',
         status: 'todo',
+        category: 'Personal',
         priority: 'medium',
         dueDate: '2026-12-01',
         createdAt: '2026-10-14T08:00:00.000Z',
@@ -191,6 +201,7 @@ describe('Tasks', function () {
         id: 9,
         title: 'Fold laundry',
         status: 'done',
+        category: 'Home',
         priority: 'low',
         dueDate: '2026-11-25',
         createdAt: '2026-11-08T12:00:00.000Z',
@@ -213,6 +224,11 @@ describe('Tasks', function () {
         // Filter by priority
         if (where.priority) {
           results = results.filter((task) => task.priority === where.priority);
+        }
+
+        // Filter by category
+        if (where.category) {
+          results = results.filter((task) => task.category === where.category);
         }
 
         // Search title and description
@@ -251,6 +267,13 @@ describe('Tasks', function () {
 
       assert.equal(res.status, 200);
       assert.ok(res.body.every((task) => task.priority === 'high'));
+    });
+
+    it('filters by category', async function () {
+      const res = await api().get('/api/tasks?category=Personal').set('Authorization', `Bearer ${token}`);
+
+      assert.equal(res.status, 200);
+      assert.ok(res.body.every((task) => task.category === 'Personal'));
     });
 
     it('searches tasks', async function () {

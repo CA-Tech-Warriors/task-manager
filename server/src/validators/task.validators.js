@@ -1,6 +1,6 @@
 // Request rules for /api/tasks. Owner: C (cards C-1, C-2, C-4).
 const { body, param, query } = require('express-validator');
-const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX } = require('../constants');
+const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX, CATEGORY_MAX } = require('../constants');
 const sanitizeHtml = require('sanitize-html');
 
 // Removes HTML tags, then turns entities like &amp; back into plain characters,
@@ -44,6 +44,13 @@ const priority = body('priority')
   .isIn(PRIORITIES)
   .withMessage(`Priority must be one of: ${PRIORITIES.join(', ')}.`);
 
+const category = body('category')
+  .optional()
+  .customSanitizer(stripHtml)
+  .trim()
+  .isLength({ max: CATEGORY_MAX })
+  .withMessage(`Keep the category to ${CATEGORY_MAX} characters or fewer.`);
+
 // dueDate an ISO date or null.
 const dueDate = body('dueDate')
   .optional({ values: 'null' })
@@ -60,8 +67,8 @@ const updateTitle = body('title')
   .isLength({ max: TITLE_MAX })
   .withMessage(`Keep the title to ${TITLE_MAX} characters or fewer.`);
 
-const createTaskRules = [title, description, status, priority, dueDate];
-const updateTaskRules = [taskId, updateTitle, description, status, priority, dueDate];
+const createTaskRules = [title, description, status, priority, category, dueDate];
+const updateTaskRules = [taskId, updateTitle, description, status, priority, category, dueDate];
 
 // TODO C-4: validate sortBy (createdAt | dueDate) and order (asc | desc).
 const listTaskRules = [
@@ -69,6 +76,11 @@ const listTaskRules = [
     .optional()
     .isIn(STATUSES)
     .withMessage(`Status must be one of: ${STATUSES.join(', ')}.`),
+  query('category')
+    .optional()
+    .trim()
+    .isLength({ max: CATEGORY_MAX })
+    .withMessage(`Keep the category to ${CATEGORY_MAX} characters or fewer.`),
   query('priority')
     .optional()
     .isIn(PRIORITIES)

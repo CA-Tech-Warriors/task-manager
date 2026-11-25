@@ -1,4 +1,4 @@
-import { DESCRIPTION_MAX, TITLE_MAX } from '../config';
+import { CATEGORY_MAX, DESCRIPTION_MAX, TITLE_MAX } from '../config';
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,6 +19,9 @@ export function validateTask(task) {
   else if (title.length > TITLE_MAX) errors.title = `Keep the title to ${TITLE_MAX} characters or fewer.`;
   if ((task.description || '').length > DESCRIPTION_MAX) {
     errors.description = `Keep the description to ${DESCRIPTION_MAX} characters or fewer.`;
+  }
+  if ((task.category || '').length > CATEGORY_MAX) {
+    errors.category = `Keep the category to ${CATEGORY_MAX} characters or fewer.`;
   }
   return errors;
 }

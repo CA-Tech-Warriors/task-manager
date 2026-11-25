@@ -23,6 +23,7 @@ export default function Dashboard() {
   const showToast = useToast();
 
   const [status, setStatus] = useState('');
+  const [category, setCategory] = useState('');
   const [priority, setPriority] = useState('');
   const [sort, setSort] = useState(SORTS[0].value);
   const [searchInput, setSearchInput] = useState('');
@@ -38,7 +39,10 @@ export default function Dashboard() {
   const latest = useRef(0);
 
   const [sortBy, order] = sort.split(':');
-  const hasFilters = Boolean(status || priority || search);
+  const hasFilters = Boolean(status || category || priority || search);
+  const categories = [...new Set(allTasks.map((t) => (t.category || 'Personal').trim()).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  );
 
   // The list uses the API's filters; counts always come from the full list.
   const load = useCallback(async () => {
@@ -46,7 +50,7 @@ export default function Dashboard() {
     setRefreshing(true);
     setError('');
     try {
-      const params = { status, priority, search, sortBy, order };
+      const params = { status, category, priority, search, sortBy, order };
       const [list, all] = await Promise.all([taskApi.list(params), hasFilters ? taskApi.list() : null]);
       if (id !== latest.current) return;
       setTasks(list);
@@ -59,7 +63,7 @@ export default function Dashboard() {
         setRefreshing(false);
       }
     }
-  }, [status, priority, search, sortBy, order, hasFilters]);
+  }, [status, category, priority, search, sortBy, order, hasFilters]);
 
   useEffect(() => {
     load();
@@ -178,6 +182,17 @@ export default function Dashboard() {
               <div className="toolbar__end">
                 {refreshing && <Spinner label="Updating list" />}
                 <label className="select-label">
+                  Category
+                  <select className="select" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="">Any</option>
+                    {categories.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="select-label">
                   Priority
                   <select className="select" value={priority} onChange={(e) => setPriority(e.target.value)}>
                     <option value="">Any</option>
@@ -204,7 +219,7 @@ export default function Dashboard() {
             {tasks.length === 0 ? (
               <div className="no-results">
                 <p className="no-results__title">No tasks match</p>
-                <p className="muted">Try a different search, status or priority.</p>
+                <p className="muted">Try a different search, status, category or priority.</p>
               </div>
             ) : (
               <ul className="task-list" aria-label="Task list">

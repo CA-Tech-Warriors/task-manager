@@ -1,6 +1,6 @@
 // Owner: A (card A-4)
 const { DataTypes } = require('sequelize');
-const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX } = require('../constants');
+const { STATUSES, PRIORITIES, TITLE_MAX, DESCRIPTION_MAX, CATEGORY_MAX } = require('../constants');
 
 module.exports = (sequelize) =>
   sequelize.define(
@@ -22,6 +22,14 @@ module.exports = (sequelize) =>
       },
       status: { type: DataTypes.ENUM(...STATUSES), allowNull: false, defaultValue: STATUSES[0] },
       priority: { type: DataTypes.ENUM(...PRIORITIES), allowNull: false, defaultValue: 'medium' },
+      category: {
+        type: DataTypes.STRING(CATEGORY_MAX),
+        allowNull: false,
+        defaultValue: 'Personal',
+        validate: {
+          len: { args: [0, CATEGORY_MAX], msg: `Category can be up to ${CATEGORY_MAX} characters.` },
+        },
+      },
       dueDate: { type: DataTypes.DATEONLY, allowNull: true },
     },
     { tableName: 'tasks' },

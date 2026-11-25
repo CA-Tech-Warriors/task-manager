@@ -18,6 +18,7 @@ export const STATUS_DONE = STATUSES[STATUSES.length - 1].value;
 
 export const TITLE_MAX = 100;
 export const DESCRIPTION_MAX = 500;
+export const CATEGORY_MAX = 30;
 
 export const statusLabel = (value) => STATUSES.find((s) => s.value === value)?.label ?? value;
 export const priorityLabel = (value) => PRIORITIES.find((p) => p.value === value)?.label ?? value;
